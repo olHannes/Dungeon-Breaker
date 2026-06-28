@@ -41,6 +41,7 @@ subprojects {
 allprojects {
     apply plugin: 'java'
     apply plugin: 'checkstyle'
+    apply plugin: 'jacoco'
 
     java {
         toolchain {
@@ -152,6 +153,26 @@ allprojects {
     tasks.withType(JavaCompile).configureEach {
         dependsOn tasks.named('generateInternalAssetsList')
     }
+
+    jacoco {
+        toolVersion = rootProject.ext.jacocoVersion
+        reportsDirectory = layout.buildDirectory.dir(rootProject.ext.jacocoDirectory)
+    }
+
+    test {
+        useJUnitPlatform()
+        finalizedBy jacocoTestReport
+    }
+
+    jacocoTestReport {
+        dependsOn test
+
+        reports {
+            xml.required = true
+            csv.required = false
+            html.required = true
+        }
+    }
 }
 
 tasks.named('clean') {
@@ -168,3 +189,4 @@ spotless {
         target '**/*.java'
     }
 }
+
