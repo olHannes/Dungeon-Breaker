@@ -1,0 +1,45 @@
+name: Code Coverage
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  coverage:
+    name: JaCoCo coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: gradle
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: Run tests and generate JaCoCo report
+        run: ./gradlew clean test jacocoTestReport
+
+      - name: Format coverage summary
+        run: python3 .github/scripts/code_coverage_formatter.py
+
+      - name: Upload JaCoCo reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-reports
+          path: |
+            **/build/JacocoReports/test/html
+            **/build/JacocoReports/test/jacocoTestReport.xml
+          if-no-files-found: error
