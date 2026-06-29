@@ -1,0 +1,35 @@
+
+name: Apply Spotless
+
+on:
+  pull_request:
+  
+jobs:
+  spotless_apply:
+    name: Apply Spotless on Code
+    runs-on: ubuntu-latest
+
+    permissions: 
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout Branch
+        uses: actions/checkout@v6
+      
+      - name: Setup JDK 25
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+        
+      - name: Apply Spotless
+        run: ./gradlew spotlessApply
+      
+      - name: Commit Changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "test@test.de"
+          git add -A
+          git commit -m "style: Apply Spotless Formatting"
+          git push
